@@ -4,7 +4,20 @@ import torch.nn.functional as F
 import torch.nn.init as init
 
 
-__all__ = ['ResNet', 'fc', 'resnet20', 'resnet32', 'resnet44', 'resnet56', 'resnet110', 'resnet1202']
+__all__ = [
+    'ResNet',
+    'fc',
+    'resnet18',
+    'resnet20',
+    'resnet32',
+    'resnet34',
+    'resnet44',
+    'resnet50',
+    'resnet56',
+    'resnet101',
+    'resnet110',
+    'resnet152',
+    'resnet1202']
 
 
 def _weights_init(m):
@@ -36,6 +49,45 @@ class BasicBlock(nn.Module):
         x = self.bn2(self.conv2(x))
         x += residual
         return x
+
+
+class Bottleneck(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(Bottleneck, self).__init__()
+        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
+                               padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
+        self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(planes * 4)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
 
 
 class ResNet(nn.Module):
@@ -122,3 +174,23 @@ def resnet110(num_classes):
 
 def resnet1202(num_classes):
     return ResNet(BasicBlock, [200, 200, 200], num_classes=num_classes)
+
+
+def resnet18(num_classes):
+    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+
+
+def resnet34(num_classes):
+    return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=num_classes)
+
+
+def resnet50(num_classes):
+    return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=num_classes)
+
+
+def resnet101(num_classes):
+    return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=num_classes)
+
+
+def resnet152(num_classes):
+    return ResNet(Bottleneck, [3, 8, 36, 3], num_classes=num_classes)

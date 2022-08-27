@@ -286,11 +286,11 @@ def validate(val_loader, model, criterion, epoch, args, log=None, tf_writer=None
 def adjust_learning_rate(optimizer, epoch, args):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     epoch = epoch + 1
-    if epoch <= 0:
-        lr = args.lr * epoch / 1
-    elif epoch > 9:
+    if epoch <= 5:
+        lr = args.lr * epoch / 5
+    elif epoch > 180:
         lr = args.lr * 0.0001
-    elif epoch > 8:
+    elif epoch > 160:
         lr = args.lr * 0.01
     else:
         lr = args.lr
